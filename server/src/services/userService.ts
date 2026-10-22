@@ -1,5 +1,5 @@
 import { assertCan } from '../domain/accessPolicy';
-import { ConflictError, FieldErrors, UnauthorizedError } from '../domain/errors';
+import { ConflictError, FieldErrors, NotFoundError, UnauthorizedError, ValidationError } from '../domain/errors';
 import { ROLES, isRole, type Actor, type Role, type User } from '../domain/types';
 import type { ServiceDeps } from './context';
 
@@ -39,6 +39,17 @@ export function createUserService({ repos, clock, logger }: ServiceDeps) {
       });
       logger.info('user.created', { userId: user.id, role: user.role, by: actor.id });
       return user;
+    },
+
+    /** People move teams; assignments stay with the person (admin-console rule 2). */
+    changeRole(actor: Actor, userId: number, role: unknown): User {
+      assertCan(actor, 'users.manage');
+      if (!isRole(role)) throw new ValidationError({ role: `must be one of ${ROLES.join(', ')}` });
+      const user = repos.users.findById(userId);
+      if (!user) throw new NotFoundError(`User ${userId} not found`);
+      repos.users.setRole(userId, role);
+      logger.info('user.role_changed', { userId, from: user.role, to: role, by: actor.id });
+      return repos.users.findById(userId)!;
     },
 
     listAll(actor: Actor): User[] {

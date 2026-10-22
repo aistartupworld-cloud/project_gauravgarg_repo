@@ -40,6 +40,9 @@ export function createUserRepository(db: Database) {
         : db.prepare('SELECT * FROM users ORDER BY role, username').all();
       return (rows as Row[]).map(toUser);
     },
+    setRole(id: number, role: Role): void {
+      db.prepare('UPDATE users SET role = ? WHERE id = ?').run(role, id);
+    },
     count(): number {
       return num(db.prepare('SELECT COUNT(*) AS n FROM users').get() as Row, 'n');
     },

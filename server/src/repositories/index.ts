@@ -1,6 +1,7 @@
 import type { Database } from '../infrastructure/db';
 import { createAuditRepository } from './auditRepository';
 import { createControlRepository } from './controlRepository';
+import { createEvidenceRepository } from './evidenceRepository';
 import { createFindingRepository } from './findingRepository';
 import { createSlaRepository } from './slaRepository';
 import { createUserRepository } from './userRepository';
@@ -12,6 +13,7 @@ export function createRepositories(db: Database) {
     audits: createAuditRepository(db),
     sla: createSlaRepository(db),
     findings: createFindingRepository(db),
+    evidence: createEvidenceRepository(db),
   };
 }
 export type Repositories = ReturnType<typeof createRepositories>;
