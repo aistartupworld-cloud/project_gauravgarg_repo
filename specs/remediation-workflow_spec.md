@@ -26,8 +26,9 @@ Every other pair raises `InvalidFindingStateException` (409, `code: "INVALID_FIN
 3. Evidence insert + transition to AWAITING_REVIEW happen in one transaction.
 4. Reviewer decisions require a comment of 3–1000 chars.
 5. **Separation of duties (NFR-08):** a decision is rejected with `SeparationOfDutiesViolation` (403,
-   `code: "SOD_VIOLATION"`) when the deciding user is the finding's owner or the auditor who raised it, or does not
-   hold REVIEWER role. ADMIN cannot approve either (admins configure, they don't attest).
+   `code: "SOD_VIOLATION"`) when the deciding user is the finding's owner, the auditor who raised it, or anyone who
+   uploaded evidence for it, or does not hold REVIEWER role. The check compares **user ids**, so a person whose role
+   later changed (e.g. owner → reviewer) still cannot approve their own work. ADMIN cannot approve either.
 6. Audit coupling: when the first finding of an audit in FINDINGS_RECORDED moves to AWAITING_REVIEW, the audit is
    **not** auto-transitioned; auditors move audits explicitly.
 7. Findings of a CLOSED audit cannot change (cannot happen by rule 5 of audit spec, still guarded).
