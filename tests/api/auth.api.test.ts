@@ -58,7 +58,7 @@ describe('[AC-10] user administration', () => {
   it('[AC-10] rejects duplicates and unknown roles', async () => {
     const admin = bearer(await f.token('alice.admin'));
     expect((await f.api.post('/api/admin/users').set(admin).send({ username: 'ravi.auditor', displayName: 'Dup', role: 'AUDITOR' })).status).toBe(409);
-    const bad = await f.api.post('/api/admin/users').set(admin).send({ username: 'x', displayName: 'X', role: 'GOD' });
+    const bad = await f.api.post('/api/admin/users').set(admin).send({ username: 'x', displayName: 'Xavier', role: 'GOD' });
     expect(bad.status).toBe(400);
     expect(Object.keys(bad.body.fields).sort()).toEqual(['role', 'username']);
   });

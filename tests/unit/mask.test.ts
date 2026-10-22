@@ -28,3 +28,9 @@ describe('[NFR-03] sensitive detail masking', () => {
     expect(input.detail.host).toBe('web-01.example.internal');
   });
 });
+
+describe('[NFR-03] masking does not over-match', () => {
+  it('[NFR-03] clock times and ISO instants survive', () => {
+    expect(maskSensitive('at 09:00:00 on 2026-10-01T09:00:00.000Z')).toBe('at 09:00:00 on 2026-10-01T09:00:00.000Z');
+  });
+});

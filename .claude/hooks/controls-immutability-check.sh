@@ -1,13 +1,21 @@
 #!/usr/bin/env bash
 # PreToolUse(Edit|Write|MultiEdit): published control versions are immutable (AC-01, NFR-08).
+# An UPDATE/DELETE on control_versions is allowed only when its WHERE clause pins status = 'DRAFT'.
 source "$(dirname "$0")/lib.sh"
 rel="$(hook_rel_path)"
 case "$rel" in server/src/*) ;; *) exit 0 ;; esac
-text="$(hook_new_text)"
-# The only UPDATE allowed on control_versions is publishing a DRAFT row.
-if printf '%s' "$text" | grep -Eiq 'UPDATE[[:space:]]+control_versions'; then
-  if ! printf '%s' "$text" | grep -Eiq "UPDATE[[:space:]]+control_versions[[:space:]]+SET[[:space:]]+status[[:space:]]*=[[:space:]]*'PUBLISHED'.*status[[:space:]]*=[[:space:]]*'DRAFT'"; then
-    block "$rel updates control_versions outside the DRAFT→PUBLISHED path. Create a new version instead (AC-01)."
-  fi
+offending="$(hook_new_text | node -e '
+  let s = ""; process.stdin.on("data", d => s += d).on("end", () => {
+    const bad = [];
+    for (const m of s.matchAll(/(UPDATE|DELETE\s+FROM)\s+control_versions\b/gi)) {
+      const stmt = s.slice(m.index, m.index + 500).split(/[`;]/)[0];
+      if (!/WHERE[\s\S]*status\s*=\s*\x27DRAFT\x27/i.test(stmt)) bad.push(stmt.split("\n")[0].trim());
+    }
+    process.stdout.write(bad.join("\n"));
+  });')"
+if [ -n "$offending" ]; then
+  block "$rel changes control_versions without restricting to DRAFT rows:
+$offending
+Published versions are immutable — revise the control to create a new version (AC-01)."
 fi
 exit 0
