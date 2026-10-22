@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
 import { createApp } from './app';
-import { systemClock } from './infrastructure/clock';
+import { fixedClock, systemClock } from './infrastructure/clock';
 import { openDatabase } from './infrastructure/db';
 import { createLogger, parseLevel } from './infrastructure/logging/logger';
 import { runMigrations } from './infrastructure/migrations';
@@ -16,9 +16,12 @@ const db = openDatabase(dbPath);
 const applied = runMigrations(db);
 if (applied.length) logger.info('db.migrated', { applied });
 
+// FIXED_NOW pins the clock for deterministic demos and Playwright snapshots.
+const clock = process.env.FIXED_NOW ? fixedClock(process.env.FIXED_NOW) : systemClock;
+
 const ctx = createApp({
   db,
-  clock: systemClock,
+  clock,
   logger,
   tokenSecret,
   webDist: process.env.SERVE_WEB === 'false' ? null : undefined,

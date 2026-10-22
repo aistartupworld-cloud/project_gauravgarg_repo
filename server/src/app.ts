@@ -4,6 +4,7 @@ import express, { type Express } from 'express';
 import { authRouter } from './controllers/authController';
 import { auditRouter } from './controllers/auditController';
 import { controlRouter } from './controllers/controlController';
+import { dashboardRouter } from './controllers/dashboardController';
 import { findingRouter } from './controllers/findingController';
 import { remediationRouter } from './controllers/remediationController';
 import { slaRouter } from './controllers/slaController';
@@ -18,6 +19,7 @@ import type { Logger } from './infrastructure/logging/logger';
 import { createRepositories, type Repositories } from './repositories';
 import { createAuditService } from './services/auditService';
 import { createControlService } from './services/controlService';
+import { createDashboardService } from './services/dashboardService';
 import { createFindingService } from './services/findingService';
 import { createRemediationService } from './services/remediationService';
 import { createSlaService } from './services/slaService';
@@ -48,7 +50,8 @@ function createServices(deps: { db: Database; clock: Clock; logger: Logger; repo
   const findings = createFindingService(deps);
   const audits = createAuditService(deps, findings);
   const remediation = createRemediationService(deps, findings);
-  return { users, controls, sla, findings, audits, remediation };
+  const dashboard = createDashboardService(deps, findings);
+  return { users, controls, sla, findings, audits, remediation, dashboard };
 }
 
 /** Composition root: wires repositories → services → controllers. */
@@ -80,6 +83,7 @@ export function createApp(opts: AppOptions): AppContext {
   api.use(findingRouter({ auth }, services.findings));
   api.use(slaRouter({ auth }, services.sla));
   api.use(remediationRouter({ auth }, services.remediation));
+  api.use(dashboardRouter({ auth }, services.dashboard));
   api.use(notFoundHandler);
   app.use('/api', api);
 
