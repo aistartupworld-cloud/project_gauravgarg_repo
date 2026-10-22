@@ -9,6 +9,7 @@ import {
   isFindingState,
   isSeverity,
   type Actor,
+  type Evidence,
   type FindingEvent,
   type FindingRecord,
   type FindingView,
@@ -19,12 +20,17 @@ import type { ServiceDeps } from './context';
 
 export interface FindingDetail extends FindingView {
   events: FindingEvent[];
+  evidence: Evidence[];
 }
 
 export function createFindingService({ db, repos, clock, logger }: ServiceDeps) {
   const view = (f: FindingRecord): FindingView => ({ ...f, ...overdueStatus(f.dueDate, f.state, clock.today()) });
 
-  const detail = (f: FindingRecord): FindingDetail => ({ ...view(f), events: repos.findings.events(f.findingId) });
+  const detail = (f: FindingRecord): FindingDetail => ({
+    ...view(f),
+    events: repos.findings.events(f.findingId),
+    evidence: repos.evidence.forFinding(f.findingId),
+  });
 
   /** Loads a finding the actor may see. Owners get 404 for findings that are not theirs (NFR-04). */
   const visible = (actor: Actor, findingId: string): FindingRecord => {
@@ -111,6 +117,7 @@ export function createFindingService({ db, repos, clock, logger }: ServiceDeps) 
 
     /** For sibling services: the raw record or 404 by visibility rules. */
     visible,
+    detail,
   };
 }
 export type FindingService = ReturnType<typeof createFindingService>;

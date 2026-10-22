@@ -133,3 +133,17 @@ export interface FindingView extends FindingRecord {
   escalated: boolean;
   daysOverdue: number;
 }
+
+export interface Evidence {
+  evidenceId: string;
+  findingId: string;
+  fileName: string;
+  contentType: string;
+  sizeBytes: number;
+  sha256: string;
+  note: string | null;
+  storageRef: string;
+  uploadedById: number;
+  uploadedBy: string;
+  uploadedAt: string;
+}

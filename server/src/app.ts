@@ -5,6 +5,7 @@ import { authRouter } from './controllers/authController';
 import { auditRouter } from './controllers/auditController';
 import { controlRouter } from './controllers/controlController';
 import { findingRouter } from './controllers/findingController';
+import { remediationRouter } from './controllers/remediationController';
 import { slaRouter } from './controllers/slaController';
 import { userRouter } from './controllers/userController';
 import type { Clock } from './infrastructure/clock';
@@ -18,6 +19,7 @@ import { createRepositories, type Repositories } from './repositories';
 import { createAuditService } from './services/auditService';
 import { createControlService } from './services/controlService';
 import { createFindingService } from './services/findingService';
+import { createRemediationService } from './services/remediationService';
 import { createSlaService } from './services/slaService';
 import { createUserService } from './services/userService';
 
@@ -45,7 +47,8 @@ function createServices(deps: { db: Database; clock: Clock; logger: Logger; repo
   const sla = createSlaService(deps);
   const findings = createFindingService(deps);
   const audits = createAuditService(deps, findings);
-  return { users, controls, sla, findings, audits };
+  const remediation = createRemediationService(deps, findings);
+  return { users, controls, sla, findings, audits, remediation };
 }
 
 /** Composition root: wires repositories → services → controllers. */
@@ -76,6 +79,7 @@ export function createApp(opts: AppOptions): AppContext {
   api.use(auditRouter({ auth }, services.audits));
   api.use(findingRouter({ auth }, services.findings));
   api.use(slaRouter({ auth }, services.sla));
+  api.use(remediationRouter({ auth }, services.remediation));
   api.use(notFoundHandler);
   app.use('/api', api);
 
