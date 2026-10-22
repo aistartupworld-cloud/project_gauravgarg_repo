@@ -71,4 +71,5 @@ sod-guard · ac-trace-gate (Stop)
 ## Design and process docs
 
 [docs/business-case.md](docs/business-case.md) · [docs/architecture.md](docs/architecture.md) (Mermaid C4, layers, ERD, sequence) ·
-[docs/tdd.md](docs/tdd.md) (red → green worked example) · [README.md](README.md) (quick start)
+[docs/tdd.md](docs/tdd.md) (red → green worked example) · [README.md](README.md) (quick start) ·
+[docs/submission-checklist.md](docs/submission-checklist.md) (rubric → file map)
