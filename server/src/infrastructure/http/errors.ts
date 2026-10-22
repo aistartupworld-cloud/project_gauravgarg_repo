@@ -19,6 +19,9 @@ export function errorHandler(logger: Logger) {
   return (err: unknown, _req: Request, res: Response, _next: NextFunction) => {
     if (err instanceof DomainError) {
       const status = STATUS[err.code] ?? 400;
+      if (err.code === 'SOD_VIOLATION' || err.code === 'FORBIDDEN') {
+        logger.warn('security.denied', { code: err.code, reason: err.message, actorId: (res.locals.actor as { id?: number } | undefined)?.id });
+      }
       res.status(status).json({
         error: err.name,
         code: err.code,

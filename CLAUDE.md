@@ -24,6 +24,9 @@ transactions, actor checks) → `repositories` (SQL over `node:sqlite`) → `dom
 
 ## Commands
 
+Start Claude Code from the repository root — project hooks in `.claude/settings.json` only load from there (PM-001).
+
+
 | Task | Command |
 |---|---|
 | Run the app (builds UI, seeds DB) | `npm start` → http://localhost:3000 |

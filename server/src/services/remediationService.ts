@@ -1,6 +1,7 @@
 import { assertCan } from '../domain/accessPolicy';
 import { formatEvidenceId, evidenceStorageRef, validateEvidence, validateReview } from '../domain/evidencePolicy';
 import { assertFindingTransition } from '../domain/findingStateMachine';
+import { assertSeparationOfDuties } from '../domain/separationOfDuties';
 import { type Actor } from '../domain/types';
 import { transaction } from '../infrastructure/db';
 import type { ServiceDeps } from './context';
@@ -37,6 +38,14 @@ export function createRemediationService({ db, repos, clock, logger }: ServiceDe
       transaction(db, () => {
         const finding = findings.visible(actor, findingId);
         assertFindingTransition(finding.state, decision);
+        // NFR-08: must run before any REMEDIATED / RE_OPEN decision is written (see fix-loop 001).
+        assertSeparationOfDuties({
+          deciderId: actor.id,
+          deciderRole: actor.role,
+          ownerId: finding.ownerId,
+          raisedById: finding.raisedById,
+          evidenceUploaderIds: repos.evidence.forFinding(findingId).map((e) => e.uploadedById),
+        });
         repos.findings.appendEvent({ findingId, fromState: finding.state, toState: decision, actorId: actor.id, comment, at: clock.now().toISOString() });
         logger.info('finding.reviewed', { auditId: finding.auditId, findingId, decision });
       });

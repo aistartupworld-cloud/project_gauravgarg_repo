@@ -1,8 +1,12 @@
+import { createHash } from 'node:crypto';
 import { createApp, type AppContext } from '../app';
 import { addDays } from '../domain/calendar';
 import type { Actor } from '../domain/types';
 import { fixedClock } from '../infrastructure/clock';
 import { SEED_CONTROLS, SEED_USERS } from './data';
+
+/** Synthetic checksum: evidence storage is stubbed, so we hash the file name. */
+const sha = (name: string) => createHash('sha256').update(name).digest('hex');
 
 function actor(ctx: AppContext, username: string): Actor {
   const u = ctx.repos.users.findByUsername(username)!;
@@ -107,6 +111,39 @@ export function seedIfEmpty(ctx: AppContext): Record<string, number> | null {
       ownerId: olivia.id,
     }),
   );
+
+  // Remediation history: one submission awaiting review, one sent back, one approved.
+  const rhea = actor(ctx, 'rhea.reviewer');
+  const rob = actor(ctx, 'rob.reviewer');
+  const [, sharedAccount, alertRouting, , backupTest] = findings;
+  at(-20).remediation.submitEvidence(omar, sharedAccount!.findingId, {
+    fileName: 'svc-payments-batch-owners.csv',
+    contentType: 'text/csv',
+    sizeBytes: 1824,
+    sha256: sha('svc-payments-batch-owners.csv'),
+    note: 'Named owners assigned; interactive logins disabled.',
+  });
+  at(-18).remediation.review(rhea, sharedAccount!.findingId, {
+    decision: 'RE_OPEN',
+    comment: 'The export still shows two interactive sessions last week. Please attach the PAM policy change.',
+  });
+  at(-3).remediation.submitEvidence(olivia, alertRouting!.findingId, {
+    fileName: 'pagerduty-routing-rule.png',
+    contentType: 'image/png',
+    sizeBytes: 182_330,
+    sha256: sha('pagerduty-routing-rule.png'),
+    note: 'Routing rule added for the database alert source.',
+  });
+  at(0).remediation.submitEvidence(olivia, backupTest!.findingId, {
+    fileName: 'restore-test-report.pdf',
+    contentType: 'application/pdf',
+    sizeBytes: 534_112,
+    sha256: sha('restore-test-report.pdf'),
+  });
+  at(0).remediation.review(rob, backupTest!.findingId, {
+    decision: 'REMEDIATED',
+    comment: 'Restore of the document store completed in 42 minutes; report signed by the service owner.',
+  });
 
   // CIS audit: planned only.
   at(0).audits.create(ravi, {
