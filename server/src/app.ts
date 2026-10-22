@@ -4,6 +4,8 @@ import express, { type Express } from 'express';
 import { authRouter } from './controllers/authController';
 import { auditRouter } from './controllers/auditController';
 import { controlRouter } from './controllers/controlController';
+import { findingRouter } from './controllers/findingController';
+import { slaRouter } from './controllers/slaController';
 import { userRouter } from './controllers/userController';
 import type { Clock } from './infrastructure/clock';
 import type { Database } from './infrastructure/db';
@@ -15,6 +17,8 @@ import type { Logger } from './infrastructure/logging/logger';
 import { createRepositories, type Repositories } from './repositories';
 import { createAuditService } from './services/auditService';
 import { createControlService } from './services/controlService';
+import { createFindingService } from './services/findingService';
+import { createSlaService } from './services/slaService';
 import { createUserService } from './services/userService';
 
 export interface AppOptions {
@@ -38,8 +42,10 @@ export interface AppContext {
 function createServices(deps: { db: Database; clock: Clock; logger: Logger; repos: Repositories }) {
   const users = createUserService(deps);
   const controls = createControlService(deps);
-  const audits = createAuditService(deps);
-  return { users, controls, audits };
+  const sla = createSlaService(deps);
+  const findings = createFindingService(deps);
+  const audits = createAuditService(deps, findings);
+  return { users, controls, sla, findings, audits };
 }
 
 /** Composition root: wires repositories → services → controllers. */
@@ -68,6 +74,8 @@ export function createApp(opts: AppOptions): AppContext {
   api.use(userRouter({ auth }, services.users));
   api.use(controlRouter({ auth }, services.controls));
   api.use(auditRouter({ auth }, services.audits));
+  api.use(findingRouter({ auth }, services.findings));
+  api.use(slaRouter({ auth }, services.sla));
   api.use(notFoundHandler);
   app.use('/api', api);
 

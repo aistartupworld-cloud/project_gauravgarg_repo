@@ -43,12 +43,14 @@ export function makeFixture(opts: { today?: string } = {}): Fixture {
   };
 
   const tokens = new Map<string, string>();
+  // Tokens expire after 8h; key the cache by the fixture clock so time-travel tests re-authenticate.
   const token = async (username: string) => {
-    const cached = tokens.get(username);
+    const key = `${username}@${clock.now().toISOString().slice(0, 13)}`;
+    const cached = tokens.get(key);
     if (cached) return cached;
     const res = await request(ctx.app).post('/api/auth/login').send({ username });
     if (res.status !== 200) throw new Error(`login ${username} failed: ${res.status} ${JSON.stringify(res.body)}`);
-    tokens.set(username, res.body.token);
+    tokens.set(key, res.body.token);
     return res.body.token as string;
   };
 
