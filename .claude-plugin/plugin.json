@@ -1,0 +1,45 @@
+{
+  "name": "securegate-compliance-substrate",
+  "version": "1.0.0",
+  "description": "Compliance-audit substrate for SecureGate (BC-AINE-015): domain agents, SLA/state/evidence skills, append-only and separation-of-duties hooks, sprint commands. Layered on top of the Claude Harness Engine plugin.",
+  "author": { "name": "SecureGate capstone" },
+  "license": "UNLICENSED",
+  "keywords": ["grc", "compliance", "audit", "remediation", "sla", "separation-of-duties"],
+  "dependencies": ["claude-harness-engine"],
+  "agents": [
+    "./.claude/agents/planner.md",
+    "./.claude/agents/implementer.md",
+    "./.claude/agents/reviewer.md",
+    "./.claude/agents/tester.md",
+    "./.claude/agents/security-reviewer.md",
+    "./.claude/agents/design-critic.md",
+    "./.claude/agents/ui-designer.md",
+    "./.claude/agents/audit-planner-agent.md",
+    "./.claude/agents/remediation-tracker-agent.md",
+    "./.claude/agents/escalation-agent.md",
+    "./.claude/agents/state-machine-validator-agent.md",
+    "./.claude/agents/archtest-author-agent.md",
+    "./.claude/agents/doc-writer.md",
+    "./.claude/agents/janitor.md"
+  ],
+  "skills": "./.claude/skills/",
+  "commands": "./.claude/commands/",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/.claude/hooks/migration-append-only-check.sh" },
+          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/.claude/hooks/finding-immutability-check.sh" },
+          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/.claude/hooks/controls-immutability-check.sh" },
+          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/.claude/hooks/role-boundary-check.sh" },
+          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/.claude/hooks/sod-guard.sh" }
+        ]
+      }
+    ],
+    "Stop": [
+      { "hooks": [ { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/.claude/hooks/ac-trace-gate.sh" } ] }
+    ]
+  },
+  "mcpServers": "./.mcp.json"
+}
