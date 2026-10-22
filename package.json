@@ -19,7 +19,7 @@
     "test:arch": "vitest run tests/architecture && npm run lint:deps",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "lint:deps": "depcruise server/src --config .dependency-cruiser.cjs",
+    "lint:deps": "depcruise server/src web/src --config .dependency-cruiser.cjs",
     "ac:trace": "tsx scripts/ac-trace.ts",
     "agent:review": "tsx scripts/agent-review.ts",
     "migrations:lock": "tsx scripts/migrations-lock.ts"
