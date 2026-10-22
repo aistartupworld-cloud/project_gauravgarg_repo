@@ -67,3 +67,8 @@ sod-guard · ac-trace-gate (Stop)
 [sprint-contracts/](sprint-contracts/) · [specs/reviews/](specs/reviews/) · [docs/fix-loops/](docs/fix-loops/) ·
 [docs/knowledge-deposits.md](docs/knowledge-deposits.md) · [docs/post-mortems/](docs/post-mortems/) ·
 [docs/pr-history.md](docs/pr-history.md)
+
+## Design and process docs
+
+[docs/business-case.md](docs/business-case.md) · [docs/architecture.md](docs/architecture.md) (Mermaid C4, layers, ERD, sequence) ·
+[docs/tdd.md](docs/tdd.md) (red → green worked example) · [README.md](README.md) (quick start)
