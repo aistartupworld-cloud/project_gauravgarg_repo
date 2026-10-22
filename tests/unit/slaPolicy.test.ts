@@ -32,7 +32,7 @@ describe('[AC-05] severity-based due dates', () => {
     ['2026-03-28', 'CRITICAL', '2026-04-04', 'ignores DST: dates are UTC calendar days'],
     ['2100-02-25', 'CRITICAL', '2100-03-04', '2100 is not a leap year'],
     ['2000-02-25', 'CRITICAL', '2000-03-03', '2000 is a leap year'],
-  ] as const)('[AC-05][NFR-01] %s %s → %s (%s)', (detected, severity, due) => {
+  ] as const)('[AC-05][NFR-01] %s %s → %s (%s)', (detected, severity, due, _why) => {
     expect(computeDueDate(detected, severity, v1)).toBe(due);
   });
 

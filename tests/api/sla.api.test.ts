@@ -73,7 +73,7 @@ describe('[AC-08] escalation', () => {
     expect(q.body).toEqual([expect.objectContaining({ findingId: critical.findingId, escalated: true, daysOverdue: 12, owner: 'olivia.owner' })]);
 
     f.clock.set('2026-11-10T08:00:00.000Z');
-    const q2 = await f.api.get('/api/admin/escalations').set(admin);
+    const q2 = await f.api.get('/api/admin/escalations').set(bearer(await f.token('alice.admin')));
     expect(q2.body.map((x: { findingId: string; daysOverdue: number }) => [x.findingId, x.daysOverdue])).toEqual([
       [critical.findingId, 33],
       [high.findingId, 10],

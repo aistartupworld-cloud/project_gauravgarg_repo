@@ -93,3 +93,43 @@ export function isAuditState(v: unknown): v is AuditState {
 export function isFindingState(v: unknown): v is FindingState {
   return typeof v === 'string' && (FINDING_STATES as readonly string[]).includes(v);
 }
+
+export interface FindingEvent {
+  seq: number;
+  fromState: FindingState | null;
+  toState: FindingState;
+  actorId: number;
+  actor: string;
+  comment: string | null;
+  at: string;
+}
+
+/** Stored finding fields (immutable once recorded) plus the current state from its latest event. */
+export interface FindingRecord {
+  findingId: string;
+  auditId: string;
+  frameworkCode: string;
+  controlId: string;
+  controlVersion: number;
+  controlTitle: string;
+  severity: Severity;
+  title: string;
+  description: string;
+  evidenceRef: string;
+  ownerId: number;
+  owner: string;
+  ownerName: string;
+  raisedById: number;
+  raisedBy: string;
+  detectedOn: string;
+  dueDate: string;
+  slaRuleSetVersion: number;
+  createdAt: string;
+  state: FindingState;
+}
+
+/** What the API returns: the record plus computed escalation (AC-08). */
+export interface FindingView extends FindingRecord {
+  escalated: boolean;
+  daysOverdue: number;
+}
