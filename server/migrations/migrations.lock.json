@@ -1,0 +1,4 @@
+{
+  "001_init_core.sql": "e66635980886ddd886470add6ae60db639ca8a37d7762506ca631e073cb4f901",
+  "002_append_only_triggers.sql": "12960d244577e21b2fb30ba7731af62f07e23e2b4f9a7da05b5a2ae82376b4b5"
+}
