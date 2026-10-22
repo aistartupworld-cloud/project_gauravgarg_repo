@@ -12,6 +12,7 @@ Check with `git log --first-parent --oneline main`.
 | #4 | `feat/sprint-3-remediation-sod` | Evidence, review decisions, role change, separation of duties (fix loop 001) | [contract](../sprint-contracts/sprint-3-remediation-sod.md) · [review](../specs/reviews/sprint-3-review.md) · [fix loop](fix-loops/001-sod-self-approval.md) |
 | #5 | `feat/sprint-4-dashboard-admin-ui` | Dashboard API, React UI, admin console, Playwright snapshots | [contract](../sprint-contracts/sprint-4-dashboard-admin-ui.md) · [review](../specs/reviews/sprint-4-review.md) |
 | #6 | `chore/ci-docs-packaging` | GitLab + GitHub CI with Claude review, Agent SDK reviewer, architecture/TDD docs, coverage report, README | this file |
+| #7 | `docs/submission-checklist` | Rubric-to-file map for L&D evaluation | [submission-checklist.md](submission-checklist.md) |
 
 ## How these map to GitLab merge requests
 
