@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+env:
+  NODE_OPTIONS: --disable-warning=ExperimentalWarning
+
+jobs:
+  verify-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run test:arch
+      - run: npm run migrations:lock -- --check
+      - run: npm run ac:trace
+      - run: npm run test:coverage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+
+  e2e:
+    runs-on: ubuntu-latest
+    container: mcr.microsoft.com/playwright:v1.56.1-noble
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+      - run: npm run test:e2e
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+
+  claude-review:
+    if: github.event_name == 'pull_request'
+    needs: verify-and-test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Act as the reviewer agent in .claude/agents/reviewer.md. Specs in specs/ are the source of truth.
+            Review this pull request for: layering (CLAUDE.md), append-only tables, integer-day SLA maths,
+            requireRole on every route, separation of duties, and AC-tagged tests for every new behaviour.
+            Start with "Verdict: PASS", "Verdict: RATCHET" or "Verdict: FAIL", then list defects with file:line.
+          claude_args: --model claude-opus-5-5 --max-turns 30

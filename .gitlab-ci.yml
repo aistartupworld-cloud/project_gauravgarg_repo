@@ -1,0 +1,76 @@
+# SecureGate CI — GitLab. Mirrors .github/workflows/ci.yml.
+# Merge requests into main must pass every stage; the claude-review job posts an AI review (needs ANTHROPIC_API_KEY,
+# a masked CI/CD variable). Branch protection on main: "Allowed to push: No one", merges via MR with --no-ff.
+
+default:
+  image: mcr.microsoft.com/playwright:v1.56.1-noble
+  cache:
+    key:
+      files: [package-lock.json]
+    paths: [.npm/]
+  before_script:
+    - node --version   # Node 22.5+ needed for node:sqlite
+    - npm ci --cache .npm --prefer-offline
+
+variables:
+  NODE_OPTIONS: --disable-warning=ExperimentalWarning
+  CI: "true"
+
+stages: [verify, test, e2e, review]
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+typecheck:
+  stage: verify
+  script:
+    - npm run typecheck
+
+architecture:
+  stage: verify
+  script:
+    - npm run test:arch          # structural tests + dependency-cruiser
+    - npm run migrations:lock -- --check
+
+ac-trace:
+  stage: verify
+  script:
+    - npm run ac:trace           # every AC/NFR in specs/ has a tagged test, else fail
+
+unit-api-coverage:
+  stage: test
+  script:
+    - npm run test:coverage
+  coverage: '/Lines\s*:\s*(\d+(?:\.\d+)?)%/'
+  artifacts:
+    when: always
+    paths: [coverage/]
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura-coverage.xml
+
+e2e:
+  stage: e2e
+  script:
+    - npm run test:e2e
+  artifacts:
+    when: on_failure
+    paths: [playwright-report/, test-results/]
+    expire_in: 7 days
+
+claude-review:
+  stage: review
+  needs: [typecheck, unit-api-coverage]
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $ANTHROPIC_API_KEY
+  variables:
+    GIT_DEPTH: 0
+  script:
+    - git fetch origin "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
+    - BASE_REF="origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" npm run agent:review
+  artifacts:
+    when: always
+    paths: [specs/reviews/agent-review.md]
